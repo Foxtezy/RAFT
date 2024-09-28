@@ -1,0 +1,3 @@
+
+class NodeId(str):
+    pass
