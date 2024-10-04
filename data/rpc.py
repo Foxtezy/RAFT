@@ -2,7 +2,8 @@ from typing import Any, List
 
 from attr import dataclass
 
-from data.nodeId import NodeId
+from data.common import NodeId
+from data.state import LogValue
 
 
 @dataclass(frozen=True)
@@ -11,7 +12,7 @@ class AppendEntries:
     leader_id: NodeId
     prev_log_index: int
     prev_log_term: int
-    entries: List[Any]
+    entries: List[LogValue]
     leader_commit: int
 
 @dataclass(frozen=True)
