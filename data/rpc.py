@@ -30,4 +30,4 @@ class RequestVote:
 @dataclass(frozen=True)
 class RequestVoteRes:
     term: int
-    voteGranted: bool
+    vote_granted: bool

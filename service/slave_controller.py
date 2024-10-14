@@ -1,15 +1,19 @@
 from flask import Flask, request, jsonify
+from werkzeug.utils import redirect
 
 from data.rpc import AppendEntries, AppendEntriesRes, RequestVote, RequestVoteRes
-from data.state import SlaveState
+from data.state import SlaveState, Role, LogValue
+from service.heart import Heart
 
 
 class SlaveController:
     state: SlaveState
+    heart: Heart
     app = Flask(__name__)
 
-    def __init__(self, state: SlaveState):
+    def __init__(self, state: SlaveState, heart: Heart):
         self.state = state
+        self.heart = heart
 
     def run_flask(self):
         self.app.run(debug=True, use_reloader=False)
@@ -18,6 +22,7 @@ class SlaveController:
     def append_entries(self):
         data = request.json
         append = AppendEntries(**data)
+        self.heart.reset()
         if append.term < self.state.current_term or append.prev_log_index >= len(self.state.log) or self.state.log[append.prev_log_index].term != append.prev_log_term:
             return jsonify(AppendEntriesRes(term=self.state.current_term, success=False))
 
@@ -39,6 +44,7 @@ class SlaveController:
     def request_vote(self):
         data = request.json
         req = RequestVote(**data)
+        self.heart.reset()
         if req.term < self.state.current_term:
             return jsonify(RequestVoteRes(self.state.current_term, False))
 
@@ -47,6 +53,14 @@ class SlaveController:
                 return jsonify(RequestVoteRes(self.state.current_term, True))
 
         return jsonify(RequestVoteRes(self.state.current_term, False))
+
+    @app.route('/client_update', methods=['POST'])
+    def client_update(self):
+        data = request.json
+        if self.state.role != Role.MASTER:
+            return redirect(f"{self.state.leader_id}/client_update")
+        else:
+            self.state.log.append(LogValue(self.state.current_term, data["value"]))
 
 
 

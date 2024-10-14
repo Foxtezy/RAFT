@@ -1,3 +1,4 @@
+import enum
 from dataclasses import dataclass, field
 from typing import Dict, Any, List
 
@@ -8,8 +9,16 @@ class LogValue:
     term: int
     value: Any
 
+
+class Role(enum.Enum):
+    SLAVE = 0
+    FOLLOWER = 1
+    MASTER = 2
+
 @dataclass
 class SlaveState:
+    my_id: NodeId
+    role: Role = Role.SLAVE
     current_term: int = 0
     leader_id: NodeId = None
     voted_for: NodeId = None
