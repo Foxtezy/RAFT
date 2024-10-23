@@ -57,7 +57,7 @@ class SlaveController:
     @app.route('/client_update', methods=['POST'])
     def client_update(self):
         data = request.json
-        if self.state.role != Role.MASTER:
+        if self.state.role.get_role() != Role.MASTER:
             return redirect(f"{self.state.leader_id}/client_update")
         else:
             self.state.log.append(LogValue(self.state.current_term, data["value"]))

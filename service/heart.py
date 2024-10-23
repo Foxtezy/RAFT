@@ -1,28 +1,25 @@
-from abc import ABC, abstractmethod
 from random import randint
-from threading import Event, Thread
+from threading import Event
 
-class Observer(ABC):
-    @abstractmethod
-    def notify(self):
-        pass
+from data.settings import Settings
+from utils import Observable
 
-class Heart(Thread):
-    timeout: int
+
+class Heart(Observable):
+    settings: Settings
     event = Event()
-    observers: Observer
 
-    def __init__(self, timeout: int):
+    def __init__(self, settings: Settings):
         super().__init__()
-        self.timeout = timeout
+        self.settings = settings
 
 
     def run(self):
         while True:
-            if self.event.wait((self.timeout + randint(-self.timeout // 10, self.timeout // 10)) / 1000):
+            if self.event.wait((self.settings.timeout + randint(-self.settings.timeout // 10, self.settings.timeout // 10)) / 1000):
                 self.event.clear()
             else:
-                self.observers.notify()
+                self.notify_all()
 
 
     def reset(self):
