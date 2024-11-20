@@ -35,6 +35,8 @@ class SlaveController:
 
         if append.leader_commit > self.state.commit_index:
             self.state.commit_index = append.leader_commit if append.leader_commit < len(self.state.log) - 1 else len(self.state.log) - 1
+            # коммитим
+
 
         return jsonify(AppendEntriesRes(term=self.state.current_term, success=True))
 
@@ -60,7 +62,7 @@ class SlaveController:
         if self.state.role.get_role() != Role.MASTER:
             return redirect(f"{self.state.leader_id}/client_update")
         else:
-            self.state.log.append(LogValue(self.state.current_term, data["value"]))
+            self.state.log.append(LogValue(self.state.current_term, data["storage_idx"], data["value"]))
 
 
 

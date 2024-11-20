@@ -31,6 +31,7 @@ class MasterClient(Thread):
             self.event.clear()
             if self.slave_state.role.get_role() != Role.MASTER:
                 self.event.wait()
+                self.master_state.init(self.slave_state)
             self.update_nodes()
             sleep(self.settings.timeout / 1000)
 

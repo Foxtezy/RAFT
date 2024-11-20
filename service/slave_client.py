@@ -10,5 +10,5 @@ class SlaveClient:
     def __init__(self, state: SlaveState):
         self.state = state
 
-    def update_value_async(self, new_value):
-        requests.post(url=f"{self.state.leader_id}/client_update", json={'value': dill.dumps(new_value)})
+    def update_value_async(self, storage_idx, func):
+        requests.post(url=f"{self.state.leader_id}/client_update", json={'storage_idx': storage_idx, 'value': dill.dumps(func)})
