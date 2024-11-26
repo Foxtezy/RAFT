@@ -1,9 +1,13 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import List, Any
 
 
 class Observable(ABC):
-    observer_funcs: List[Any] = []
+    observer_funcs: List[Any]
+
+    def __init__(self):
+        super().__init__()
+        self.observer_funcs = []
 
     def subscribe(self, observer_func):
         self.observer_funcs.append(observer_func)

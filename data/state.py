@@ -38,18 +38,20 @@ class SlaveState:
     current_term: int = 0
     leader_id: NodeId = None
     voted_for: NodeId = None
-    log: List[LogValue] = field(default_factory=lambda: [LogValue(0, None)])
+    log: List[LogValue] = field(default_factory=lambda: [LogValue(0, -1, b'')])
     commit_index: int = 0
     last_applied: int = 0
 
 
 class MasterState:
     node_ids: List[NodeId]
-    next_index: Dict[NodeId, int] = field(default_factory=dict)
-    match_index: Dict[NodeId, int] = field(default_factory=dict)
+    next_index: Dict[NodeId, int]
+    match_index: Dict[NodeId, int]
 
     def __init__(self, nodes: List[NodeId]):
         self.node_ids = nodes
+        self.next_index = {}
+        self.match_index = {}
         self.init()
 
     # вызывается при смене роли на мастера

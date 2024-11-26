@@ -1,7 +1,6 @@
 from abc import ABC
 
 from starter import Raft
-import dill
 
 
 class SyncObject(ABC):

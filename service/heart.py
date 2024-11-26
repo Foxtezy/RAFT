@@ -1,3 +1,4 @@
+import logging
 from random import randint
 from threading import Event
 
@@ -19,6 +20,7 @@ class Heart(Observable):
             if self.event.wait((self.settings.timeout + randint(-self.settings.timeout // 10, self.settings.timeout // 10)) / 1000):
                 self.event.clear()
             else:
+                logging.warning("TIMEOUT")
                 self.notify_all()
 
 

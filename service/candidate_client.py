@@ -1,12 +1,12 @@
 import math
 from threading import Thread, Event
-from time import sleep
 
 import requests
 
 from data.rpc import RequestVote
 from data.state import MasterState, SlaveState, Role
 
+headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
 
 class CandidateClient(Thread):
     slave_state: SlaveState
@@ -34,15 +34,16 @@ class CandidateClient(Thread):
 
     def request_vote(self):
         votes_count = 0
-        for node_id, _ in self.master_state.next_index:
+        for node_id, _ in self.master_state.next_index.items():
             try:
-                resp = requests.post(url = f"{node_id}/request_vote",
+                resp = requests.post(url = f"http://{node_id}/request_vote",
                           json = RequestVote(
                               term=self.slave_state.current_term,
                               candidate_id=self.slave_state.my_id,
                               last_log_index=len(self.slave_state.log)-1,
                               last_log_term=self.slave_state.log[len(self.slave_state.log)-1].term
-                          ).__dict__, timeout=0.5)
+                          ).__dict__, headers=headers, timeout=0.5)
+                print(resp.content.decode("utf-8"))
                 if resp.json()['vote_granted']:
                     votes_count += 1
                 if resp.json()['term'] > self.slave_state.current_term:

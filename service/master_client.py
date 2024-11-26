@@ -7,6 +7,7 @@ from data.rpc import AppendEntries
 from data.settings import Settings
 from data.state import MasterState, SlaveState, Role
 import requests
+import logging
 
 
 class MasterClient(Thread):
@@ -32,6 +33,7 @@ class MasterClient(Thread):
             if self.slave_state.role.get_role() != Role.MASTER:
                 self.event.wait()
                 self.master_state.init(self.slave_state)
+                logging.info(f"{self.slave_state.my_id} BECOME MASTER")
             self.update_nodes()
             sleep(self.settings.timeout / 1000)
 
@@ -46,7 +48,6 @@ class MasterClient(Thread):
                 success_num += 1
         if success_num >= math.ceil(len(self.master_state.next_index) / 2):
             self.slave_state.commit_index = len(self.slave_state.log) - 1
-            # коммитим
 
     """
         return True if success

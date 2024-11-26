@@ -1,13 +1,12 @@
 from typing import Any, List
 
-from attr import dataclass
+from pydantic import BaseModel
 
 from data.common import NodeId
 from data.state import LogValue
 
 
-@dataclass(frozen=True)
-class AppendEntries:
+class AppendEntries(BaseModel):
     term: int
     leader_id: NodeId
     prev_log_index: int
@@ -15,19 +14,16 @@ class AppendEntries:
     entries: List[LogValue]
     leader_commit: int
 
-@dataclass(frozen=True)
-class AppendEntriesRes:
+class AppendEntriesRes(BaseModel):
     term: int
     success: bool
 
-@dataclass(frozen=True)
-class RequestVote:
+class RequestVote(BaseModel):
     term: int
     candidate_id: NodeId
     last_log_index: int
     last_log_term: int
 
-@dataclass(frozen=True)
-class RequestVoteRes:
+class RequestVoteRes(BaseModel):
     term: int
     vote_granted: bool
