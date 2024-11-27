@@ -29,6 +29,7 @@ class CandidateClient(Thread):
             if self.slave_state.role.get_role() != Role.CANDIDATE:
                 self.event.wait()
             self.slave_state.current_term += 1
+            self.slave_state.voted_for = None
             while self.slave_state.role.get_role() == Role.CANDIDATE:
                 self.request_vote()
 
@@ -37,12 +38,12 @@ class CandidateClient(Thread):
         for node_id, _ in self.master_state.next_index.items():
             try:
                 resp = requests.post(url = f"http://{node_id}/request_vote",
-                          json = RequestVote(
+                          data = RequestVote(
                               term=self.slave_state.current_term,
                               candidate_id=self.slave_state.my_id,
                               last_log_index=len(self.slave_state.log)-1,
                               last_log_term=self.slave_state.log[len(self.slave_state.log)-1].term
-                          ).__dict__, headers=headers, timeout=0.5)
+                          ).model_dump_json(), headers=headers, timeout=5)
                 print(resp.content.decode("utf-8"))
                 if resp.json()['vote_granted']:
                     votes_count += 1

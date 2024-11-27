@@ -1,5 +1,6 @@
 import logging
 import threading
+from time import sleep
 
 from batteries import SyncString
 from data.common import NodeId
@@ -15,16 +16,14 @@ if __name__ == "__main__":
 
     raft = Raft()
     string = SyncString(raft, 1, 'aboba')
-
-    threading.Thread(raft.start(my_id=NodeId("127.0.0.1:1111"), node_ids=[NodeId("127.0.0.1:1111"), NodeId("127.0.0.1:2222")],
+    threading.Thread(target=lambda: raft.start(my_id=NodeId("127.0.0.1:3333"), node_ids=[NodeId("127.0.0.1:3333")],
                storage=Storage({1: string}), settings=Settings(timeout=5000))).start()
 
+    sleep(2)
+    string.update("123")
     while True:
         val = input("Enter your value: ")
-        if val == "get":
-            print(string.update)
+        if val == "g":
+            print(string.get())
         else:
             string.update(val)
-
-
-

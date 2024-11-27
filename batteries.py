@@ -12,3 +12,6 @@ class SyncString(SyncObject):
     @replicated
     def update(self, new):
         self.string = new
+
+    def get(self):
+        return self.string

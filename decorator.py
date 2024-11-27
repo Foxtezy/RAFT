@@ -16,11 +16,9 @@ class SyncObject(ABC):
 
 def replicated(func):
     def wrapper(self, *args, **kwargs):
-        if type(self) == SyncObject:
-            ret = func(self, *args, **kwargs)
+        if isinstance(self, SyncObject):
             def curried(new_self):
                 return func(new_self, *args, **kwargs)
             self._raft.update_storage(self.storage_idx, curried)
-            return ret
 
     return wrapper

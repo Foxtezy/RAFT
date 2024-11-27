@@ -2,16 +2,17 @@ import enum
 from dataclasses import dataclass, field
 from typing import Dict, Any, List
 
+from pydantic import BaseModel
+
 from data.common import NodeId
 from data.storage import Storage
 from utils import Observable
 
 
-@dataclass
-class LogValue:
+class LogValue(BaseModel):
     term: int
     storage_idx: int
-    value: bytes
+    value: str # base64 string
 
 
 class Role(enum.Enum):
@@ -38,7 +39,7 @@ class SlaveState:
     current_term: int = 0
     leader_id: NodeId = None
     voted_for: NodeId = None
-    log: List[LogValue] = field(default_factory=lambda: [LogValue(0, -1, b'')])
+    log: List[LogValue] = field(default_factory=lambda: [LogValue(term=0, storage_idx=-1, value='')])
     commit_index: int = 0
     last_applied: int = 0
 
