@@ -1,4 +1,5 @@
 import enum
+import logging
 from dataclasses import dataclass, field
 from typing import Dict, Any, List
 
@@ -25,6 +26,8 @@ class RoleObservable(Observable):
     role: Role = Role.SLAVE
 
     def set_role(self, role: Role):
+        if role != self.role:
+            logging.info("ROLE CHANGED TO %s", role.name)
         self.role = role
         self.notify_all(role)
 

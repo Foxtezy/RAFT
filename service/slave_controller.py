@@ -1,15 +1,16 @@
 import base64
+import logging
 from typing import Dict
 
-from flask import Flask, request, jsonify, Response
+import dill
+from flask import Flask, request, Response
 from flask_classful import FlaskView, route
-from werkzeug.utils import redirect
 from flask_pydantic import validate
+from werkzeug.utils import redirect
 
-from data.rpc import AppendEntries, AppendEntriesRes, RequestVote, RequestVoteRes
+from data.rpc import AppendEntries, AppendEntriesRes, RequestVote, RequestVoteRes, ClientUpdate
 from data.state import SlaveState, Role, LogValue
 from service.heart import Heart
-import dill
 
 
 class SlaveController(FlaskView):
@@ -27,6 +28,7 @@ class SlaveController(FlaskView):
     @route('/append_entries', methods=['POST'])
     @validate()
     def append_entries(self, body: AppendEntries):
+        logging.debug("append_entries from %s, body [%s]", request.remote_addr, body)
         append = body
 
         self.heart.reset()
@@ -44,7 +46,7 @@ class SlaveController(FlaskView):
         self.state.current_term = append.term
         self.state.leader_id = append.leader_id
 
-        if append.leader_commit > self.state.commit_index: #TODO: лидер сам у себя не обновляет
+        if append.leader_commit > self.state.commit_index:
             for i in range(self.state.commit_index + 1, append.leader_commit + 1):
                 func = dill.loads(base64.b64decode(self.state.log[i].value))
                 func(self.state.storage[self.state.log[i].storage_idx])
@@ -57,10 +59,11 @@ class SlaveController(FlaskView):
     @route('/request_vote', methods=['POST'])
     @validate()
     def request_vote(self, body: RequestVote):
+        logging.debug("request_vote from %s, body [%s]", request.remote_addr, body)
         req = body
         self.heart.reset()
         if req.term < self.state.current_term:
-            return jsonify(RequestVoteRes(term=self.state.current_term, vote_granted=False))
+            return RequestVoteRes(term=self.state.current_term, vote_granted=False)
 
         if self.state.voted_for is None or self.state.voted_for == req.candidate_id:
             if len(self.state.log) - 1 <= req.last_log_index and self.state.log[len(self.state.log) - 1].term <= req.last_log_term:
@@ -70,12 +73,14 @@ class SlaveController(FlaskView):
         return RequestVoteRes(term=self.state.current_term, vote_granted=False)
 
     @route('/client_update', methods=['POST'])
-    def client_update(self):
-        data = request.json
+    @validate()
+    def client_update(self, body: ClientUpdate):
+        logging.debug("client_update from %s, body [%s]", request.remote_addr, body)
+        data = body
         if self.state.role.get_role() != Role.MASTER:
             return redirect(f"{self.state.leader_id}/client_update")
         else:
-            self.state.log.append(LogValue(term=self.state.current_term, storage_idx=data["storage_idx"], value=data["value"]))
+            self.state.log.append(LogValue(term=self.state.current_term, storage_idx=data.storage_idx, value=data.value))
             return Response(status=200)
 
 

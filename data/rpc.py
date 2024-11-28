@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import List
 
 from pydantic import BaseModel
 
@@ -27,3 +27,7 @@ class RequestVote(BaseModel):
 class RequestVoteRes(BaseModel):
     term: int
     vote_granted: bool
+
+class ClientUpdate(BaseModel):
+    storage_idx: int
+    value: str

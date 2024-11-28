@@ -1,3 +1,4 @@
+import logging
 import threading
 from typing import List
 
@@ -31,16 +32,20 @@ class Raft:
         ])
 
         candidate_client = self.injector.inject(CandidateClient)
+        candidate_client.daemon = True
         candidate_client.start()
 
         master_client = self.injector.inject(MasterClient)
+        master_client.daemon = True
         master_client.start()
 
         SlaveController.register(app, route_base='/', init_argument={'state': self.injector.inject(SlaveState), 'heart': self.injector.inject(Heart)})
         host, port = my_id.split(':')
         port = int(port)
         threading.Thread(target=self.injector.inject(Heart).run, daemon=True).start()
-        app.run(host=host, port=port, debug=True, use_reloader=False)
+        log = logging.getLogger('werkzeug')
+        log.setLevel(logging.ERROR)
+        app.run(host=host, port=port)
 
     def update_storage(self, storage_idx, func):
         self.injector.inject(SlaveClient).update_value_async(storage_idx, func)

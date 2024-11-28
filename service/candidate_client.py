@@ -4,6 +4,7 @@ from threading import Thread, Event
 import requests
 
 from data.rpc import RequestVote
+from data.settings import Settings
 from data.state import MasterState, SlaveState, Role
 
 headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
@@ -12,11 +13,13 @@ class CandidateClient(Thread):
     slave_state: SlaveState
     master_state: MasterState
     event = Event()
+    settings: Settings
 
-    def __init__(self, master_state: MasterState, slave_state: SlaveState):
+    def __init__(self, master_state: MasterState, slave_state: SlaveState, settings: Settings):
         super().__init__()
         self.slave_state = slave_state
         self.master_state = master_state
+        self.settings = settings
 
     def run(self):
         def notifier(role):
@@ -43,8 +46,7 @@ class CandidateClient(Thread):
                               candidate_id=self.slave_state.my_id,
                               last_log_index=len(self.slave_state.log)-1,
                               last_log_term=self.slave_state.log[len(self.slave_state.log)-1].term
-                          ).model_dump_json(), headers=headers, timeout=5)
-                print(resp.content.decode("utf-8"))
+                          ).model_dump_json(), headers=headers, timeout=(self.settings.timeout / 1000) / 10)
                 if resp.json()['vote_granted']:
                     votes_count += 1
                 if resp.json()['term'] > self.slave_state.current_term:
