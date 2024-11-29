@@ -46,7 +46,7 @@ class CandidateClient(Thread):
                               candidate_id=self.slave_state.my_id,
                               last_log_index=len(self.slave_state.log)-1,
                               last_log_term=self.slave_state.log[len(self.slave_state.log)-1].term
-                          ).model_dump_json(), headers=headers, timeout=(self.settings.timeout / 1000) / 10)
+                          ).model_dump_json(), headers=headers, timeout=(self.settings.timeout / 1000) / 2)
                 if resp.json()['vote_granted']:
                     votes_count += 1
                 if resp.json()['term'] > self.slave_state.current_term:

@@ -1,15 +1,14 @@
 from abc import ABC
 
+from data.storage import Storage
 from starter import Raft
 
 
 class SyncObject(ABC):
     _raft: Raft
-    storage_idx: int
 
-    def __init__(self, raft: Raft, storage_idx: int):
+    def __init__(self, raft: Raft):
         self._raft = raft
-        self.storage_idx = storage_idx
 
 
 
@@ -19,6 +18,11 @@ def replicated(func):
         if isinstance(self, SyncObject):
             def curried(new_self):
                 return func(new_self, *args, **kwargs)
-            self._raft.update_storage(self.storage_idx, curried)
+            storage_idx = None
+            for k, v in self._raft.storage.items():
+                if v is self:
+                    storage_idx = k
+                    break
+            self._raft.update_storage(storage_idx, curried)
 
     return wrapper

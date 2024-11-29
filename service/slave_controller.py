@@ -78,7 +78,7 @@ class SlaveController(FlaskView):
         logging.debug("client_update from %s, body [%s]", request.remote_addr, body)
         data = body
         if self.state.role.get_role() != Role.MASTER:
-            return redirect(f"{self.state.leader_id}/client_update")
+            return redirect(f"http://{self.state.leader_id}/client_update")
         else:
             self.state.log.append(LogValue(term=self.state.current_term, storage_idx=data.storage_idx, value=data.value))
             return Response(status=200)

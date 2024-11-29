@@ -19,8 +19,10 @@ app = Flask(__name__)
 
 class Raft:
     injector: Injector
+    storage: Storage
 
     def start(self, my_id: NodeId, node_ids: List[NodeId], storage: Storage, settings: Settings):
+        self.storage = storage
         self.injector = Injector(bindings=[
             InstanceBinding(Settings, bound_instance=settings),
             InstanceBinding(SlaveState, bound_instance=SlaveState(my_id=my_id, storage=storage)),
@@ -30,7 +32,13 @@ class Raft:
             SelfBinding(Heart),
             InstanceBinding(MasterState, bound_instance=MasterState(nodes=node_ids)),
         ])
+        logging.basicConfig(
+            format='%(asctime)s %(levelname)-8s %(message)s',
+            level=logging.DEBUG,
+            datefmt='%Y-%m-%d %H:%M:%S')
 
+        logging.getLogger("requests").setLevel(logging.WARNING)
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
         candidate_client = self.injector.inject(CandidateClient)
         candidate_client.daemon = True
         candidate_client.start()
@@ -43,8 +51,7 @@ class Raft:
         host, port = my_id.split(':')
         port = int(port)
         threading.Thread(target=self.injector.inject(Heart).run, daemon=True).start()
-        log = logging.getLogger('werkzeug')
-        log.setLevel(logging.ERROR)
+        logging.getLogger('werkzeug').setLevel(logging.WARNING)
         app.run(host=host, port=port)
 
     def update_storage(self, storage_idx, func):
