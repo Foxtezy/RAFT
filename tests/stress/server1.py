@@ -22,7 +22,7 @@ if __name__ == "__main__":
     prefix = random.randint(0, 9)
 
     for i in range(99999999999):
-        sleep(0.5)
-        data[f"{prefix}_{i}"] = i
+        sleep(1)
+        data[f"{1}_{prefix}_{i}"] = i
         print(data)
 

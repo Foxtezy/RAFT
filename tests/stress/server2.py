@@ -1,4 +1,5 @@
 import logging
+import random
 import threading
 from time import sleep
 
@@ -19,6 +20,9 @@ if __name__ == "__main__":
     threading.Thread(target=lambda: raft.start(my_id=NodeId("127.0.0.1:2222"), node_ids=[NodeId("127.0.0.1:1111"), NodeId("127.0.0.1:2222"), NodeId("127.0.0.1:3333")],
                storage=Storage({1: data}), settings=Settings(timeout=500)), daemon=True).start()
 
-    while True:
+    prefix = random.randint(0, 9)
+
+    for i in range(99999999999):
         sleep(1)
+        data[f"{2}_{prefix}_{i}"] = i
         print(data)
