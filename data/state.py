@@ -15,6 +15,9 @@ class LogValue(BaseModel):
     storage_idx: int
     value: str # base64 string
 
+    def __str__(self) -> str:
+        return f"[term={self.term}, storage_idx={self.storage_idx}]"
+
 
 class Role(enum.Enum):
     SLAVE = 0

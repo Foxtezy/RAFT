@@ -14,6 +14,10 @@ class AppendEntries(BaseModel):
     entries: List[LogValue]
     leader_commit: int
 
+    def __str__(self) -> str:
+        return f"term={self.term} leader_id={self.leader_id} prev_log_index={self.prev_log_index} prev_log_term={self.prev_log_term} entries={[str(item) for item in self.entries]} leader_commit={self.leader_commit}"
+
+
 class AppendEntriesRes(BaseModel):
     term: int
     success: bool

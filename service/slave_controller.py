@@ -28,7 +28,7 @@ class SlaveController(FlaskView):
     @route('/append_entries', methods=['POST'])
     @validate()
     def append_entries(self, body: AppendEntries):
-        logging.debug("append_entries from %s, body [%s]", request.remote_addr, body)
+        logging.debug(f"append_entries body [%s]", str(body))
         append = body
 
         self.heart.reset()
@@ -39,10 +39,11 @@ class SlaveController(FlaskView):
             return AppendEntriesRes(term=self.state.current_term, success=False)
 
 
-        if append.prev_log_index + 1 < len(self.state.log):
+        if append.prev_log_index + 1 < len(self.state.log) and append.leader_id != self.state.my_id:
             del self.state.log[append.prev_log_index + 1 : len(self.state.log)]
 
-        self.state.log.extend(append.entries)
+        if append.leader_id != self.state.my_id:
+            self.state.log.extend(append.entries)
         self.state.current_term = append.term
         self.state.leader_id = append.leader_id
 
@@ -59,15 +60,15 @@ class SlaveController(FlaskView):
     @route('/request_vote', methods=['POST'])
     @validate()
     def request_vote(self, body: RequestVote):
-        logging.debug("request_vote from %s, body [%s]", request.remote_addr, body)
+        logging.debug("request_vote body [%s]", body)
         req = body
-        self.heart.reset()
         if req.term < self.state.current_term:
             return RequestVoteRes(term=self.state.current_term, vote_granted=False)
 
         if self.state.voted_for is None or self.state.voted_for == req.candidate_id:
             if len(self.state.log) - 1 <= req.last_log_index and self.state.log[len(self.state.log) - 1].term <= req.last_log_term:
                 self.state.voted_for = req.candidate_id
+                self.heart.reset()
                 return RequestVoteRes(term=self.state.current_term, vote_granted=True)
 
         return RequestVoteRes(term=self.state.current_term, vote_granted=False)
@@ -75,7 +76,7 @@ class SlaveController(FlaskView):
     @route('/client_update', methods=['POST'])
     @validate()
     def client_update(self, body: ClientUpdate):
-        logging.debug("client_update from %s, body [%s]", request.remote_addr, body)
+        logging.debug("client_update body [%s]", body)
         data = body
         if self.state.role.get_role() != Role.MASTER:
             return redirect(f"http://{self.state.leader_id}/client_update")

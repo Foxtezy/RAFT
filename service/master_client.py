@@ -85,7 +85,7 @@ class MasterClient(Thread):
                     return False
                 else:
                     self.master_state.next_index[node_id] -= 1
-                    return self.update_node(node_id)
+                    return False
 
         except requests.Timeout and requests.ConnectionError:
             logging.warning("TIMEOUT: " + node_id)

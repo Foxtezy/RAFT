@@ -1,5 +1,6 @@
 import math
 from threading import Thread, Event
+from time import sleep
 
 import requests
 
@@ -33,8 +34,8 @@ class CandidateClient(Thread):
                 self.event.wait()
             self.slave_state.current_term += 1
             self.slave_state.voted_for = None
-            while self.slave_state.role.get_role() == Role.CANDIDATE:
-                self.request_vote()
+            self.request_vote()
+            sleep((self.settings.timeout / 1000) / 5)
 
     def request_vote(self):
         votes_count = 0

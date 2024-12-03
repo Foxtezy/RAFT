@@ -1,8 +1,8 @@
 import logging
 import threading
 from time import sleep
-
-from batteries import SyncString, SyncDict
+import random
+from batteries import SyncDict
 from data.common import NodeId
 from data.settings import Settings
 from data.storage import Storage
@@ -19,8 +19,10 @@ if __name__ == "__main__":
     threading.Thread(target=lambda: raft.start(my_id=NodeId("127.0.0.1:1111"), node_ids=[NodeId("127.0.0.1:1111"), NodeId("127.0.0.1:2222"), NodeId("127.0.0.1:3333")],
                storage=Storage({1: data}), settings=Settings(timeout=500)), daemon=True).start()
 
+    prefix = random.randint(0, 9)
+
     for i in range(99999999999):
-        sleep(0.1)
-        data[i] = i
+        sleep(0.5)
+        data[f"{prefix}_{i}"] = i
         print(data)
 
