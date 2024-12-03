@@ -38,7 +38,7 @@ class MasterClient(Thread):
                 self.event.wait()
                 self.master_state.init(self.slave_state)
             self.update_nodes()
-            sleep((self.settings.timeout / 1000) / 2)
+            sleep((self.settings.timeout / 1000) / 5)
 
 
     def update_nodes(self):
@@ -51,6 +51,8 @@ class MasterClient(Thread):
             for f in futures:
                 if f.result():
                     success_num += 1
+            if self.slave_state.role.get_role() != Role.MASTER:
+                return
             if success_num >= math.ceil(len(self.master_state.next_index) / 2):
                 for i in range(self.slave_state.commit_index + 1, len(self.slave_state.log)):
                     func = dill.loads(base64.b64decode(self.slave_state.log[i].value.encode()))
@@ -61,6 +63,8 @@ class MasterClient(Thread):
         return True if success
     """
     def update_node(self, node_id):
+        if self.slave_state.role.get_role() != Role.MASTER:
+            return False
         try:
             resp = requests.post(url=f"http://{node_id}/append_entries",
                              data=AppendEntries(
@@ -70,7 +74,7 @@ class MasterClient(Thread):
                                  prev_log_term=self.slave_state.log[self.master_state.next_index[node_id] - 1].term,
                                  entries=self.slave_state.log[self.master_state.next_index[node_id]:],
                                  leader_commit=self.slave_state.commit_index
-                             ).model_dump_json(), headers=headers, timeout=(self.settings.timeout / 1000) / 5)
+                             ).model_dump_json(), headers=headers, timeout=(self.settings.timeout / 1000) / 2)
             if resp.json()['success']:
                 self.master_state.next_index[node_id] = len(self.slave_state.log)
                 self.master_state.match_index[node_id] = self.slave_state.commit_index
