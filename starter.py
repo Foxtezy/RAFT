@@ -32,10 +32,6 @@ class Raft:
             SelfBinding(Heart),
             InstanceBinding(MasterState, bound_instance=MasterState(nodes=node_ids)),
         ])
-        logging.basicConfig(
-            format='%(asctime)s %(levelname)-8s %(message)s',
-            level=logging.DEBUG,
-            datefmt='%Y-%m-%d %H:%M:%S')
 
         logging.getLogger("requests").setLevel(logging.WARNING)
         logging.getLogger("urllib3").setLevel(logging.WARNING)
