@@ -77,7 +77,7 @@ class MasterClient(Thread):
                              ).model_dump_json(), headers=headers, timeout=(self.settings.timeout / 1000) / 2)
             if resp.json()['success']:
                 self.master_state.next_index[node_id] = len(self.slave_state.log)
-                self.master_state.match_index[node_id] = self.slave_state.commit_index
+                self.master_state.match_index[node_id] = len(self.slave_state.log) - 1
                 return True
             else:
                 if resp.json()['term'] > self.slave_state.current_term:
