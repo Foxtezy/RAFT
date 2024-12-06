@@ -33,6 +33,8 @@ class SlaveController(FlaskView):
 
         self.heart.reset()
         if append.term > self.state.current_term or self.state.role.get_role() == Role.CANDIDATE:
+            self.state.current_term = append.term
+            self.state.voted_for = None
             self.state.role.set_role(Role.SLAVE)
 
         if append.term < self.state.current_term or append.prev_log_index >= len(self.state.log) or self.state.log[append.prev_log_index].term != append.prev_log_term:
@@ -68,6 +70,7 @@ class SlaveController(FlaskView):
         if req.term > self.state.current_term:
             self.state.current_term = req.term
             self.state.voted_for = None
+            self.state.role.set_role(Role.SLAVE)
 
         if self.state.voted_for is None or self.state.voted_for == req.candidate_id:
             if len(self.state.log) - 1 <= req.last_log_index and self.state.log[len(self.state.log) - 1].term <= req.last_log_term:

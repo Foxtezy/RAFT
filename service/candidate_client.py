@@ -55,7 +55,10 @@ class CandidateClient(Thread):
             except requests.Timeout and requests.ConnectionError:
                 pass
 
-        if votes_count >= math.ceil(len(self.master_state.next_index) / 2):
+        if self.slave_state.role.get_role() == Role.SLAVE:
+            return False
+
+        if self.slave_state.role.get_role() != Role.SLAVE and votes_count >= math.ceil(len(self.master_state.next_index) / 2):
             self.slave_state.role.set_role(Role.MASTER)
 
 
