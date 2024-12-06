@@ -65,6 +65,10 @@ class SlaveController(FlaskView):
         if req.term < self.state.current_term:
             return RequestVoteRes(term=self.state.current_term, vote_granted=False)
 
+        if req.term > self.state.current_term:
+            self.state.current_term = req.term
+            self.state.voted_for = None
+
         if self.state.voted_for is None or self.state.voted_for == req.candidate_id:
             if len(self.state.log) - 1 <= req.last_log_index and self.state.log[len(self.state.log) - 1].term <= req.last_log_term:
                 self.state.voted_for = req.candidate_id

@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     raft = Raft()
     data = SyncDict(raft)
-    threading.Thread(target=lambda: raft.start(my_id=NodeId("127.0.0.1:2222"), node_ids=[NodeId("127.0.0.1:1111"), NodeId("127.0.0.1:2222"), NodeId("127.0.0.1:3333")],
+    threading.Thread(target=lambda: raft.start(my_id=NodeId("127.0.0.1:2222"), node_ids=[NodeId("127.0.0.1:1111"), NodeId("127.0.0.1:2222"), NodeId("127.0.0.1:3333"), NodeId("127.0.0.1:4444"), NodeId("127.0.0.1:5555")],
                storage=Storage({1: data}), settings=Settings(timeout=500)), daemon=True).start()
 
     prefix = random.randint(0, 9)
