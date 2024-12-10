@@ -24,4 +24,7 @@ if __name__ == "__main__":
         if val == "g":
             print(data)
         else:
-            data[val.split(' ')[0]] = val.split(' ')[1]
+            if len(val.split(' ')) == 2:
+                data[val.split(' ')[0]] = val.split(' ')[1]
+            else:
+                data[val] = ""
