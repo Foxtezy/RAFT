@@ -1,4 +1,5 @@
 import logging
+import random
 import threading
 from typing import List
 
@@ -21,10 +22,10 @@ class Raft:
     injector: Injector
     storage: Storage
 
-    def start(self, my_id: NodeId, node_ids: List[NodeId], storage: Storage, settings: Settings):
+    def start(self, my_id: NodeId, node_ids: List[NodeId], storage: Storage):
         self.storage = storage
         self.injector = Injector(bindings=[
-            InstanceBinding(Settings, bound_instance=settings),
+            InstanceBinding(Settings, bound_instance=Settings(heartbeat_timeout=0.2, election_timeout=lambda: random.uniform(0.5, 0.7))),
             InstanceBinding(SlaveState, bound_instance=SlaveState(my_id=my_id, storage=storage)),
             SelfBinding(CandidateClient),
             SelfBinding(MasterClient),

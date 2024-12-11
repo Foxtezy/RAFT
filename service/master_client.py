@@ -1,6 +1,7 @@
 import base64
 import logging
 import math
+import time
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread, Event
 from time import sleep
@@ -37,8 +38,10 @@ class MasterClient(Thread):
             if self.slave_state.role.get_role() != Role.MASTER:
                 self.event.wait()
                 self.master_state.init(self.slave_state)
+            start_time = time.time()
             self.update_nodes()
-            sleep(self.settings.heartbeat_timeout / 5)
+            elapsed_time = time.time() - start_time
+            sleep(max(0.0, self.settings.heartbeat_timeout - elapsed_time))
 
 
     def update_nodes(self):

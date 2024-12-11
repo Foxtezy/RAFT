@@ -1,4 +1,5 @@
 import math
+import time
 from threading import Thread, Event
 from time import sleep
 
@@ -34,8 +35,12 @@ class CandidateClient(Thread):
                 self.event.wait()
             self.slave_state.current_term += 1
             self.slave_state.voted_for = None
+
+            start_time = time.time()
             self.request_vote()
-            sleep(self.settings.election_timeout() / 5)
+            elapsed_time = time.time() - start_time
+            sleep(max(0.0, self.settings.election_timeout() - elapsed_time))
+
 
     def request_vote(self):
         votes_count = 0
@@ -46,8 +51,8 @@ class CandidateClient(Thread):
                               term=self.slave_state.current_term,
                               candidate_id=self.slave_state.my_id,
                               last_log_index=len(self.slave_state.log)-1,
-                              last_log_term=self.slave_state.log[len(self.slave_state.log)-1].term
-                          ).model_dump_json(), headers=headers, timeout=self.settings.election_timeout() / 2)
+                              last_log_term=self.slave_state.log[-1].term
+                          ).model_dump_json(), headers=headers, timeout=0.05)
                 if resp.json()['vote_granted']:
                     votes_count += 1
                 if resp.json()['term'] > self.slave_state.current_term:
