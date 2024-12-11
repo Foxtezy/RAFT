@@ -11,6 +11,7 @@ from data.settings import Settings
 from data.state import MasterState, SlaveState
 from data.storage import Storage
 from service.candidate_client import CandidateClient
+from service.client_controller import ClientController
 from service.heart import Heart
 from service.master_client import MasterClient
 from service.slave_client import SlaveClient
@@ -25,7 +26,7 @@ class Raft:
     def start(self, my_id: NodeId, node_ids: List[NodeId], storage: Storage):
         self.storage = storage
         self.injector = Injector(bindings=[
-            InstanceBinding(Settings, bound_instance=Settings(heartbeat_timeout=0.2, election_timeout=lambda: random.uniform(0.5, 0.7))),
+            InstanceBinding(Settings, bound_instance=Settings(heartbeat_timeout=0.1, election_timeout=lambda: random.uniform(0.5, 0.7))),
             InstanceBinding(SlaveState, bound_instance=SlaveState(my_id=my_id, storage=storage)),
             SelfBinding(CandidateClient),
             SelfBinding(MasterClient),
@@ -45,11 +46,13 @@ class Raft:
         master_client.start()
 
         SlaveController.register(app, route_base='/', init_argument={'state': self.injector.inject(SlaveState), 'heart': self.injector.inject(Heart)})
+        ClientController.register(app, route_base='/', init_argument=self.injector.inject(SlaveState))
         host, port = my_id.split(':')
         port = int(port)
         threading.Thread(target=self.injector.inject(Heart).run, daemon=True).start()
         logging.getLogger('werkzeug').setLevel(logging.WARNING)
         app.run(host=host, port=port)
+
 
     def update_storage(self, storage_idx, func):
         self.injector.inject(SlaveClient).update_value_async(storage_idx, func)

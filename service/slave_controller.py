@@ -1,5 +1,6 @@
 import base64
 import logging
+from time import sleep
 from typing import Dict
 
 import dill
@@ -16,7 +17,6 @@ from service.heart import Heart
 class SlaveController(FlaskView):
     state: SlaveState
     heart: Heart
-    app = Flask(__name__)
 
     def __init__(self, params: Dict):
         super().__init__()
@@ -89,8 +89,7 @@ class SlaveController(FlaskView):
             return redirect(f"http://{self.state.leader_id}/client_update")
         else:
             self.state.log.append(LogValue(term=self.state.current_term, storage_idx=data.storage_idx, value=data.value))
+            idx = len(self.state.log) - 1
+            while self.state.commit_index != idx:
+                self.state.commit_event.wait()
             return Response(status=200)
-
-
-
-

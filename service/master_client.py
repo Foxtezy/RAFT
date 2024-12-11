@@ -61,6 +61,7 @@ class MasterClient(Thread):
                     func = dill.loads(base64.b64decode(self.slave_state.log[i].value.encode()))
                     func(self.slave_state.storage[self.slave_state.log[i].storage_idx])
                 self.slave_state.commit_index = len(self.slave_state.log) - 1
+                self.slave_state.commit_event.set()
 
     """
         return True if success

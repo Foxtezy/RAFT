@@ -1,5 +1,6 @@
 import enum
 import logging
+from asyncio import Event
 from dataclasses import dataclass, field
 from typing import Dict, Any, List
 
@@ -47,6 +48,7 @@ class SlaveState:
     voted_for: NodeId = None
     log: List[LogValue] = field(default_factory=lambda: [LogValue(term=0, storage_idx=-1, value='')])
     commit_index: int = 0
+    commit_event: Event = Event()
     last_applied: int = 0
 
 
