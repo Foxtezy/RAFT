@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+from typing import Callable
 
 
 @dataclass
 class Settings:
-    timeout: int
+    heartbeat_timeout: float
+    election_timeout: Callable[[], float]

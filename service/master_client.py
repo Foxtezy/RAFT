@@ -38,7 +38,7 @@ class MasterClient(Thread):
                 self.event.wait()
                 self.master_state.init(self.slave_state)
             self.update_nodes()
-            sleep((self.settings.timeout / 1000) / 5)
+            sleep(self.settings.heartbeat_timeout / 5)
 
 
     def update_nodes(self):
@@ -67,14 +67,14 @@ class MasterClient(Thread):
             return False
         try:
             resp = requests.post(url=f"http://{node_id}/append_entries",
-                             data=AppendEntries(
+                                 data=AppendEntries(
                                  term=self.slave_state.current_term,
                                  leader_id=self.slave_state.my_id,
                                  prev_log_index=self.master_state.next_index[node_id] - 1,
                                  prev_log_term=self.slave_state.log[self.master_state.next_index[node_id] - 1].term,
                                  entries=self.slave_state.log[self.master_state.next_index[node_id]:],
                                  leader_commit=self.slave_state.commit_index
-                             ).model_dump_json(), headers=headers, timeout=(self.settings.timeout / 1000) / 2)
+                             ).model_dump_json(), headers=headers, timeout=0.05)
             if resp.json()['success']:
                 self.master_state.next_index[node_id] = len(self.slave_state.log)
                 self.master_state.match_index[node_id] = len(self.slave_state.log) - 1

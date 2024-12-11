@@ -35,19 +35,19 @@ class CandidateClient(Thread):
             self.slave_state.current_term += 1
             self.slave_state.voted_for = None
             self.request_vote()
-            sleep((self.settings.timeout / 1000) / 5)
+            sleep(self.settings.election_timeout() / 5)
 
     def request_vote(self):
         votes_count = 0
         for node_id, _ in self.master_state.next_index.items():
             try:
                 resp = requests.post(url = f"http://{node_id}/request_vote",
-                          data = RequestVote(
+                                     data = RequestVote(
                               term=self.slave_state.current_term,
                               candidate_id=self.slave_state.my_id,
                               last_log_index=len(self.slave_state.log)-1,
                               last_log_term=self.slave_state.log[len(self.slave_state.log)-1].term
-                          ).model_dump_json(), headers=headers, timeout=(self.settings.timeout / 1000) / 2)
+                          ).model_dump_json(), headers=headers, timeout=self.settings.election_timeout() / 2)
                 if resp.json()['vote_granted']:
                     votes_count += 1
                 if resp.json()['term'] > self.slave_state.current_term:

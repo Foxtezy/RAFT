@@ -17,7 +17,7 @@ class Heart(Observable):
 
     def run(self):
         while True:
-            if self.event.wait((self.settings.timeout + randint(-self.settings.timeout // 10, self.settings.timeout // 10)) / 1000):
+            if self.event.wait(self.settings.heartbeat_timeout):
                 self.event.clear()
             else:
                 logging.warning("TIMEOUT")
