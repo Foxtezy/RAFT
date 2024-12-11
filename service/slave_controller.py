@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import logging
 from time import sleep
@@ -90,6 +91,7 @@ class SlaveController(FlaskView):
         else:
             self.state.log.append(LogValue(term=self.state.current_term, storage_idx=data.storage_idx, value=data.value))
             idx = len(self.state.log) - 1
-            while self.state.commit_index != idx:
+            while self.state.commit_index < idx:
                 self.state.commit_event.wait()
+                self.state.commit_event.clear()
             return Response(status=200)

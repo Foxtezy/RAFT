@@ -1,6 +1,6 @@
 import enum
 import logging
-from asyncio import Event
+from threading import Event
 from dataclasses import dataclass, field
 from typing import Dict, Any, List
 
