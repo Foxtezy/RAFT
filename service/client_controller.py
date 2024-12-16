@@ -1,4 +1,5 @@
 import base64
+from typing import Any
 
 import dill
 from flask import Response, jsonify
@@ -10,8 +11,8 @@ from data.state import SlaveState, LogValue, Role
 
 
 class SetRequest(BaseModel):
-    key: str
-    value: str
+    key: Any
+    value: Any
 
 
 class ClientController(FlaskView):
@@ -30,6 +31,6 @@ class ClientController(FlaskView):
     def set(self, body: SetRequest):
         self.state.storage[1][body.key] = body.value
         if self.state.role.get_role() != Role.MASTER:
-            return jsonify({'message': 'WARNING I AM NOT MASTER'}), 202
+            return jsonify({'message': f'WARNING I AM NOT A MASTER. MASTER IS {self.state.leader_id}'}), 202
         else:
             return jsonify({'sync_dict': str(self.state.storage[1])})
